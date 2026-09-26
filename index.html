@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Act with Intent: Distilling Behavior Intent for Vision-Language-Action Models</title>
+  <meta name="description" content="INDI distills behavior-level intent from a teacher VLM into VLA action decoders. It improves GR00T-N1.7 from 64.3% to 84.7% on SimplerEnv-Bridge, with consistent gains on RoboCasa and real-world tasks, and no teacher at deployment.">
+
+  <!-- Social cards. TODO: replace content URLs with the absolute https URL once deployed. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Act with Intent: Distilling Behavior Intent for Vision-Language-Action Models">
+  <meta property="og:description" content="INDI distills behavior-level intent from a teacher VLM into VLA action decoders, with no teacher at deployment.">
+  <meta property="og:image" content="static/images/fig1_concept.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="static/images/fig1_concept.png">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2255%22 r=%2230%22 fill=%22none%22 stroke=%22%231E7D3C%22 stroke-width=%2220%22/></svg>">
+  <link rel="preload" as="image" href="static/posters/1_put_ring.jpg">
+
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="header">
+  <h1 class="title-main">Act with <em>Intent</em></h1>
+  <p class="title-sub">Distilling Behavior Intent for Vision-Language-Action Models</p>
+  <p class="authors">Anonymous Authors</p>
+  <p class="affil">Under double-blind review</p>
+</header>
+
+<figure class="figure">
+  <img src="static/images/fig1_concept.png" alt="From behavior cloning to intent distillation: (a) behavior cloning supervises actions only, (b) future-based supervision adds representations of future states or motion, (c) INDI distills behavior-level intent from a teacher VLM into the action decoder, (d) success-rate gains on SimplerEnv-Bridge and RoboCasa-Kitchen." width="2400" height="706">
+  <figcaption><b>Figure 1:</b> From behavior cloning to intent distillation. Behavior cloning supervises
+  <i>which motion to reproduce</i>, and future-based supervision adds particular realizations of what may
+  happen. <b>INDI</b> (<span class="sc">In</span>tention <span class="sc">Di</span>stillation) instead
+  distills the <i>local objective</i> of the demonstrated behavior from a frozen teacher VLM into the action
+  decoder. The deployed policy recovers it from standard VLA inputs, with no teacher at deployment.</figcaption>
+</figure>
+
+<p class="keyline"><b>+20.4pp</b> SimplerEnv-Bridge&ensp;&middot;&ensp;<b>+6.2pp</b> RoboCasa Kitchen&ensp;&middot;&ensp;<b>+6.7pp</b> real world&ensp;&middot;&ensp;<b>0</b> teacher modules at deployment</p>
+
+<section>
+  <h2>Abstract</h2>
+  <p class="abstract">
+    Action decoders in vision-language-action (VLA) models are commonly trained by behavior cloning to
+    reproduce demonstrated action sequences. To enrich this supervision, prior work adds training signals
+    based on future observations and motion. These signals describe executions and outcomes, but do not
+    explicitly identify the local objective an action segment serves under the instruction. We propose
+    Intention Distillation (<b>INDI</b>), which makes this behavior-level intent a supervised intermediate
+    state that action generation is trained to use. A frozen teacher vision-language model (VLM) provides
+    multimodal targets from executed demonstration segments under the task instruction. The student learns
+    to predict these targets at an intermediate decoder layer using only its current observations,
+    instruction, and robot state. Context routing and an intent-mismatch objective encourage downstream
+    predictions to depend on the recovered intent, while visual-outcome and textual-purpose targets provide
+    complementary supervision. The teacher and target-generation modules are removed at deployment. INDI
+    improves GR00T-N1.7 from 64.3% to 84.7% on SimplerEnv-Bridge and from 64.1% to 70.3% on RoboCasa
+    Kitchen, with improvements on &pi;<sub>0.5</sub> across both benchmarks. Across standard scenes,
+    held-out objects, and distractor conditions, average real-world success increases from 62.0% to 68.7%.
+    Representation probes and interventions further show that the recovered states encode task and progress
+    information and influence downstream decoding.
+  </p>
+</section>
+
+<section id="demos" class="band">
+  <h2>Real-World Rollouts</h2>
+  <p>
+    Autonomous rollouts of <b>GR00T-N1.7 + INDI</b> on a bimanual SO-101 platform, one episode per task.
+    Each clip shows an external third-person view on top. The bottom strip shows the robot&rsquo;s three
+    synchronized onboard cameras (head, left wrist, right wrist), which are the only visual observations
+    the policy receives. All clips are at 1&times; speed.
+  </p>
+
+  <div class="video-grid">
+    <figure class="video-item">
+      <video muted loop playsinline controls preload="none" poster="static/posters/1_put_ring.jpg" data-src="static/videos/1_put_ring.mp4" width="720" height="1100"></video>
+      <figcaption><b>Task 1, Threading:</b> <i>&ldquo;Put the ring on the pole.&rdquo;</i></figcaption>
+    </figure>
+    <figure class="video-item">
+      <video muted loop playsinline controls preload="none" poster="static/posters/2_put_basket.jpg" data-src="static/videos/2_put_basket.mp4" width="720" height="1100"></video>
+      <figcaption><b>Task 2, Basket Nesting:</b> <i>&ldquo;Put the small basket in the large basket.&rdquo;</i></figcaption>
+    </figure>
+    <figure class="video-item">
+      <video muted loop playsinline controls preload="none" poster="static/posters/3_stack_cubes.jpg" data-src="static/videos/3_stack_cubes.mp4" width="720" height="1100"></video>
+      <figcaption><b>Task 3, Cross-Bin Stacking:</b> <i>&ldquo;Stack the cube from the right bin on the cube from the left bin.&rdquo;</i></figcaption>
+    </figure>
+    <figure class="video-item">
+      <video muted loop playsinline controls preload="none" poster="static/posters/4_put_cube.jpg" data-src="static/videos/4_put_cube.mp4" width="720" height="1100"></video>
+      <figcaption><b>Task 4, Drawer Storage:</b> <i>&ldquo;Put the cube in the upper drawer.&rdquo;</i></figcaption>
+    </figure>
+  </div>
+
+</section>
+
+<section id="method">
+  <h2>Method</h2>
+  <p>
+    INDI defines <b>intent</b> as the local objective that the forthcoming behavior should achieve under the
+    instruction, and makes it an explicit supervision target for the action decoder. It has three components:
+  </p>
+  <ol class="method-list">
+    <li>
+      <b>Intent from executed behavior.</b> A frozen teacher VLM reads the current observation, instruction,
+      a coarse action summary, and the execution video of a demonstrated segment, and states the functional
+      purpose the segment serves. Its hidden states from this interpretation become the intent target,
+      complemented by a textual-purpose grounding and an endpoint visual feature.
+    </li>
+    <li>
+      <b>Intent recovery inside the decoder.</b> Learnable intent queries must reconstruct the
+      teacher&rsquo;s intent representation at an <i>intermediate</i> decoder layer, from standard VLA
+      inputs only. The remaining layers then complete action, visual, and textual grounding predictions on
+      top of the recovered intent.
+    </li>
+    <li>
+      <b>Intent-aware decoding.</b> Asymmetric attention and an intent-mismatch margin make the recovered
+      intent a functional intermediate state that downstream prediction genuinely depends on, rather than an
+      auxiliary readout that could be ignored.
+    </li>
+  </ol>
+
+  <figure class="figure">
+    <img src="static/images/fig2_overview.png" alt="INDI overview: a training-only teacher VLM derives multimodal intent and textual-purpose targets from executed behavior; the VLA decoder recovers intent at an intermediate layer via learnable intent queries and jointly predicts actions with visual and textual groundings." loading="lazy" width="2400" height="759">
+    <figcaption><b>Figure 2:</b> Overview of INDI. A training-only teacher interprets executed behavior,
+    and the decoder learns to recover the result and act on it. Dashed paths exist only during training. At
+    deployment the teacher, cached targets, and alignment heads are all removed. The policy receives
+    ordinary VLA inputs and forms intent internally (+0.04B parameters, ~5&thinsp;ms per policy query on
+    GR00T-N1.7).</figcaption>
+  </figure>
+</section>
+
+<section id="results">
+  <h2>Results</h2>
+  <p>
+    We evaluate on two backbones (GR00T-N1.7 and &pi;<sub>0.5</sub>), two simulation benchmarks, and four
+    real-world tasks. Every comparison uses the same demonstrations, optimization budget, and evaluation
+    protocol as its baseline. The only change is behavior-intent supervision.
+  </p>
+
+  <figure class="figure chart-fig">
+    <img src="static/images/results_summary.png" alt="Grouped bar chart of average success rates, base policy versus base plus INDI: SimplerEnv-Bridge with GR00T-N1.7 64.3 to 84.7, with pi-0.5 52.3 to 58.8, RoboCasa Kitchen with GR00T-N1.7 64.1 to 70.3, with pi-0.5 34.9 to 41.4, and real-world average 62.0 to 68.7." loading="lazy" width="1892" height="1012">
+    <figcaption><b>Figure 3:</b> Average success rate, base policy vs. + INDI. Simulation numbers are means
+    over three evaluation runs. Real-world numbers average 50 trials per task over three conditions.</figcaption>
+  </figure>
+
+  <h3>SimplerEnv-Bridge</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Spoon</th><th>Carrot</th><th>Stack</th><th>EP-Basket</th><th>Avg.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>GR00T-N1.7</td><td>84.7</td><td>79.3</td><td>57.3</td><td>36.0</td><td>64.3</td></tr>
+        <tr><td class="ind">+ future supervision</td><td>81.3</td><td>73.3</td><td>56.7</td><td>60.7</td><td>68.0</td></tr>
+        <tr class="ours"><td class="ind">+ INDI (ours)</td><td><b>88.7</b></td><td><b>84.7</b></td><td><b>69.3</b></td><td><b>96.0</b></td><td><b>84.7</b></td></tr>
+        <tr class="rule"><td>&pi;<sub>0.5</sub></td><td>78.0</td><td>72.7</td><td>32.0</td><td>26.7</td><td>52.3</td></tr>
+        <tr class="ours"><td class="ind">+ INDI (ours)</td><td><b>81.3</b></td><td><b>76.0</b></td><td><b>39.3</b></td><td><b>38.7</b></td><td><b>58.8</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    Success rate (%), mean over three evaluation runs. INDI improves every task on both backbones.
+    Future-based supervision reaches 68.0% where INDI reaches 84.7%, so the gain comes from behavior-level
+    intent supervision rather than extra signal alone. On EP-Basket, success rises from 36.0% to 96.0%.
+  </p>
+
+  <h3>RoboCasa Kitchen (24 tasks)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Pick-and-Place</th><th>Open-or-Close</th><th>Others</th><th>Avg.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>GR00T-N1.7 (100 demos/task)</td><td>39.4</td><td>75.9</td><td>76.7</td><td>64.1</td></tr>
+        <tr><td class="ind">+ future supervision</td><td>47.0</td><td>80.3</td><td>72.1</td><td>65.8</td></tr>
+        <tr class="ours"><td class="ind">+ INDI (ours)</td><td><b>49.8</b></td><td><b>82.8</b></td><td><b>79.1</b></td><td><b>70.3</b></td></tr>
+        <tr class="rule"><td>&pi;<sub>0.5</sub> (100 demos/task)</td><td>14.0</td><td>55.1</td><td>39.5</td><td>34.9</td></tr>
+        <tr class="ours"><td class="ind">+ INDI (ours)</td><td><b>15.3</b></td><td><b>56.1</b></td><td><b>53.5</b></td><td><b>41.4</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    With 100 demonstrations per task, GR00T-N1.7 + INDI reaches 70.3%, within 0.5&thinsp;pp of the reported
+    GR00T-N1.7 checkpoint trained on 3,000 demonstrations per task (70.8%), and the highest average among
+    reported RoboCasa results.
+  </p>
+
+  <h3>Real-world tasks</h3>
+  <div class="table-wrap">
+    <table class="realworld">
+      <thead>
+        <tr>
+          <th rowspan="2">Task</th>
+          <th colspan="2" class="cgroup">ID clean</th>
+          <th colspan="2" class="cgroup">Held-out</th>
+          <th colspan="2" class="cgroup">Distractors</th>
+        </tr>
+        <tr>
+          <th class="sub">Base</th><th class="sub">+ INDI</th>
+          <th class="sub">Base</th><th class="sub">+ INDI</th>
+          <th class="sub">Base</th><th class="sub">+ INDI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Threading</td><td>92.0</td><td class="ours-c"><b>96.0</b></td><td><b>86.0</b></td><td class="ours-c">84.0</td><td>70.0</td><td class="ours-c"><b>82.0</b></td></tr>
+        <tr><td>Basket Nesting</td><td><b>94.0</b></td><td class="ours-c">92.0</td><td>84.0</td><td class="ours-c"><b>90.0</b></td><td>76.0</td><td class="ours-c"><b>84.0</b></td></tr>
+        <tr><td>Cross-Bin Stacking</td><td>74.0</td><td class="ours-c"><b>80.0</b></td><td>62.0</td><td class="ours-c"><b>72.0</b></td><td>58.0</td><td class="ours-c"><b>64.0</b></td></tr>
+        <tr><td>Drawer Storage</td><td>24.0</td><td class="ours-c"><b>36.0</b></td><td>16.0</td><td class="ours-c"><b>26.0</b></td><td>8.0</td><td class="ours-c"><b>18.0</b></td></tr>
+        <tr class="avg"><td>Average</td><td>71.0</td><td class="ours-c"><b>76.0</b></td><td>62.0</td><td class="ours-c"><b>68.0</b></td><td>53.0</td><td class="ours-c"><b>62.0</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    Success rate (%) over 50 trials, GR00T-N1.7 backbone. The gains concentrate on the longer-horizon tasks
+    (Cross-Bin Stacking +7.3&thinsp;pp, Drawer Storage +10.7&thinsp;pp averaged across conditions) and
+    persist as the scene shifts from training conditions: +6.0&thinsp;pp on held-out objects and
+    +9.0&thinsp;pp under distractors.
+  </p>
+</section>
+
+<section id="analysis" class="band">
+  <h2>Inside the Recovered Intent</h2>
+  <p>
+    Supervision controls first rule out a capacity story: with the same architecture, a <i>free</i> latent
+    (57.0%) and groundings-only supervision (60.0%) stay below the action-only baseline (61.5%), while
+    intent supervision alone reaches 76.0% and full INDI 85.5% on a fixed SimplerEnv-Bridge evaluation run.
+    The recovered state itself is structured like an intent. It encodes <i>what the behavior is for</i> and
+    <i>how far along it is</i>:
+  </p>
+
+  <div class="fig-trio">
+    <figure class="figure">
+      <img src="static/images/intent_task_plane.png" alt="Task-discriminative projection of recovered intents: rollouts separate into four clusters by behavior objective, consistent across real demonstrations and simulation rollouts." loading="lazy" width="1400" height="1138">
+      <figcaption><b>Figure 4a:</b> Recovered intents separate by behavior objective, consistently across
+      real demonstrations and simulation rollouts.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="static/images/intent_phase_plane.png" alt="Phase-discriminative projection of recovered intents: intents from different tasks organize by early, middle, and late execution stage." loading="lazy" width="1400" height="1080">
+      <figcaption><b>Figure 4b:</b> The same representation organizes by execution stage, shared across
+      tasks.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="static/images/task_similarity.png" alt="Centered cosine similarity between tasks in recovered-intent space: Spoon and Carrot form the closest pair, while Eggplant-in-basket is most separated from the others." loading="lazy" width="1300" height="1115">
+      <figcaption><b>Figure 4c:</b> Task relatedness in intent space: Spoon and Carrot are closest,
+      EP-Basket most separated.</figcaption>
+    </figure>
+  </div>
+
+  <p>
+    This structure is about the <i>objective</i>, not motion statistics. Operationalizing skill as the
+    executed action sequence:
+  </p>
+
+  <figure class="figure">
+    <img src="static/images/intent_vs_motion.png" alt="Three panels: (a) intent space separates 14 behavior objectives on held-out episodes; (b) a matched projection of local action snippets shows weak objective separation; (c) scatter of intent similarity versus skill similarity, where same-objective pairs with dissimilar motions remain more similar in intent space than different-objective pairs with similar motions." loading="lazy" width="2000" height="583">
+    <figcaption><b>Figure 5:</b> Intent captures objective beyond action-sequence realization.
+    (a) Teacher intent targets separate 14 behavior objectives on held-out episodes, (b) while a matched
+    projection of local action snippets separates them only weakly. (c) On progress-matched episode pairs,
+    the <i>same objective realized by dissimilar action sequences</i> stays more similar in intent space than
+    <i>different objectives realized by similar sequences</i> (dark points mark contrast sets, diamonds their
+    means). The representation preserves what the behavior is meant to accomplish across changes in how it
+    is executed.</figcaption>
+  </figure>
+
+  <p>
+    The state can even be <b>read out directly</b>. Lightweight decoders map the intent recovered inside the
+    action decoder back to an endpoint image and a purpose statement:
+  </p>
+
+  <figure class="figure">
+    <img src="static/images/intent_readout.jpg" alt="For each example: current observation, ground-truth endpoint, decoder reconstruction of the target, and images decoded from the recovered intent, zero intent, and a cross-task donor intent, together with the corresponding decoded purpose statements. Decoded content follows whatever intent is injected." loading="lazy" width="1900" height="1106">
+    <figcaption><b>Figure 6:</b> Reading the recovered intent out in pixels and words (SimplerEnv-Bridge).
+    With the policy&rsquo;s own recovered intent (<span class="c-green">green</span>) the decoded endpoint
+    and purpose track the instruction. Injecting zero intent (<span class="c-red">red</span>) or a donor
+    intent from another task (<span class="c-orange">orange</span>) makes both follow the injected content
+    instead. Two of five examples shown, the rest are in the paper.</figcaption>
+  </figure>
+
+  <p>
+    And the content is causal. Swapping the task-discriminative component of the recovered intent between
+    objectives drops closed-loop success from 84.5% (same-objective edits) to 45.2% (cross-objective) and
+    1.0% (Gaussian corruption). Forcing early- or late-stage phase content collapses success to 7.3% and
+    5.5%, while producing coherent, stage-consistent behavior:
+  </p>
+
+  <figure class="figure">
+    <img src="static/images/phase_forcing_stack.jpg" alt="Stage-forced intervention on the Stack task: the phase-matched control grasps the green block and stacks it on the yellow block; forcing early-stage intent leaves the policy hovering at the block with no stacking transition; forcing late-stage intent produces brief contact, then the arm departs as if the task were done." loading="lazy" width="1900" height="1200">
+    <figcaption><b>Figure 7:</b> Stage-forced intervention on Stack. With phase-matched intent the policy
+    stacks normally. Early-forced intent leaves it hovering at the block without ever transitioning to
+    stacking. Late-forced intent produces brief contact before departing as if the task were already done.
+    The decoder does not merely carry the recovered intent. It acts on it.</figcaption>
+  </figure>
+</section>
+
+<footer>
+  <p>All demo videos are unedited single episodes at 1&times; speed.</p>
+</footer>
+
+</div>
+<script src="static/js/main.js" defer></script>
+</body>
+</html>
